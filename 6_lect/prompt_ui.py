@@ -5,11 +5,18 @@ import os
 
 load_dotenv()
 
+# Get API token from Streamlit secrets or environment variable
+api_token = st.secrets.get("HUGGINGFACEHUB_ACCESS_TOKEN") if "HUGGINGFACEHUB_ACCESS_TOKEN" in st.secrets else os.getenv("HUGGINGFACEHUB_ACCESS_TOKEN")
+
+if not api_token:
+    st.error("⚠️ HuggingFace API token not found! Please add it to Streamlit secrets.")
+    st.info("Go to App Settings → Secrets and add: HUGGINGFACEHUB_ACCESS_TOKEN = 'your_token_here'")
+    st.stop()
+
 llm = HuggingFaceEndpoint(
     repo_id="meta-llama/Llama-3.3-70B-Instruct",
     task="text-generation",
-    huggingfacehub_api_token=os.getenv("HUGGINGFACEHUB_ACCESS_TOKEN"),
-    # max_new_tokens=512,
+    huggingfacehub_api_token=api_token,
     temperature=0.7,
 )
 
@@ -19,5 +26,12 @@ st.header("Chat with Llama 3.3-70B-Instruct Model")
 user_input = st.text_input("Enter your prompt:")
 
 if st.button("Generate Response"):
-    result = model.invoke(user_input)
-    st.write(result.content)
+    if not user_input:
+        st.warning("Please enter a prompt first!")
+    else:
+        with st.spinner("Generating response..."):
+            try:
+                result = model.invoke(user_input)
+                st.write(result.content)
+            except Exception as e:
+                st.error(f"Error: {str(e)}")
