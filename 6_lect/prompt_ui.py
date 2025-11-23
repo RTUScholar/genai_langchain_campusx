@@ -7,30 +7,25 @@ load_dotenv()
 
 # Get API token from Streamlit secrets or environment variable
 try:
-    api_token = st.secrets["HUGGINGFACEHUB_ACCESS_TOKEN"]
-    st.success("✅ API token loaded from Streamlit secrets")
-except (KeyError, FileNotFoundError, AttributeError):
+    api_token = st.secrets["HUGGINGFACEHUB_ACCESS_TOKEN"] or os.getenv("HUGGINGFACEHUB_ACCESS_TOKEN")
+except (KeyError, FileNotFoundError):
     api_token = os.getenv("HUGGINGFACEHUB_ACCESS_TOKEN")
-    if api_token:
-        st.info("ℹ️ API token loaded from environment variable")
 
 if not api_token:
-    st.error("⚠️ HuggingFace API token not found! Please add it to Streamlit secrets.")
+    st.error("⚠️ HuggingFace API token not found! Please add it to Streamlit secrets or set the environment variable.")
     st.info("Go to App Settings → Secrets and add: HUGGINGFACEHUB_ACCESS_TOKEN = 'your_token_here'")
     st.stop()
 
-# Use Mistral model - more reliable with HuggingFace Inference API
 llm = HuggingFaceEndpoint(
-    repo_id="mistralai/Mistral-7B-Instruct-v0.2",
+    repo_id="meta-llama/Llama-3.3-70B-Instruct",
     task="text-generation",
     huggingfacehub_api_token=api_token,
     temperature=0.7,
-    max_new_tokens=512,
 )
 
 model = ChatHuggingFace(llm=llm)
 
-st.header("🤖 Chat with Mistral 7B Instruct Model")
+st.header("Chat with Llama 3.3-70B-Instruct Model")
 user_input = st.text_input("Enter your prompt:")
 
 if st.button("Generate Response"):
