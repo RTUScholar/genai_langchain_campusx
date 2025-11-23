@@ -6,7 +6,10 @@ import os
 load_dotenv()
 
 # Get API token from Streamlit secrets or environment variable
-api_token = st.secrets.get("HUGGINGFACEHUB_ACCESS_TOKEN") if "HUGGINGFACEHUB_ACCESS_TOKEN" in st.secrets else os.getenv("HUGGINGFACEHUB_ACCESS_TOKEN")
+try:
+    api_token = st.secrets["HUGGINGFACEHUB_ACCESS_TOKEN"]
+except (KeyError, FileNotFoundError):
+    api_token = os.getenv("HUGGINGFACEHUB_ACCESS_TOKEN")
 
 if not api_token:
     st.error("⚠️ HuggingFace API token not found! Please add it to Streamlit secrets.")
